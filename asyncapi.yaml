@@ -1,0 +1,48 @@
+asyncapi: '2.6.0'
+info:
+  title: User Signup Event API
+  version: '1.0.0'
+  description: |
+    Ejemplo de documentación AsyncAPI para el evento UserSignedUp usando Kafka y AWS Glue Schema Registry.
+servers:
+  kafkaBroker:
+    url: kafka:9092
+    protocol: kafka
+    description: Broker de Kafka local para la POC
+channels:
+  users.signedup:
+    description: Evento emitido cuando un usuario se registra.
+    subscribe:
+      summary: El email-service consume este evento.
+      operationId: receiveUserSignedUp
+      message:
+        $ref: '#/components/messages/UserSignedUp'
+    publish:
+      summary: El auth-service produce este evento.
+      operationId: sendUserSignedUp
+      message:
+        $ref: '#/components/messages/UserSignedUp'
+components:
+  messages:
+    UserSignedUp:
+      name: UserSignedUp
+      title: User Signed Up Event
+      summary: Evento que indica que un usuario se ha registrado.
+      payload:
+        type: object
+        properties:
+          user_id:
+            type: string
+            description: ID único del usuario
+          email:
+            type: string
+            format: email
+            description: Email del usuario
+          timestamp:
+            type: string
+            format: date-time
+            description: Fecha y hora del registro
+        required:
+          - user_id
+          - email
+          - timestamp
