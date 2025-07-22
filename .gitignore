@@ -1,2 +1,4 @@
 tmp/*
-node_modules/*
+javascript/node_modules/*
+golang/bin/*
+golang/go.sum

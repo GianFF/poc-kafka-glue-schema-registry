@@ -33,7 +33,7 @@ async function publish(event, user) {
         { value: event }
       ]
     });
-    console.log('✅ Mensaje enviado:');
+    console.log('🚀 Mensaje enviado:');
     console.log(`   Usuario: ${user.user_id}, Email: ${user.email}`);
   } catch (err) {
     console.log('💥 Error enviando mensaje a Kafka:', err.message);

@@ -22,13 +22,9 @@ const run = async () => {
         // 2. Validar y deserializar el mensaje
         const event = avroType.fromBuffer(message.value);
         
-        console.log('✅ Mensaje recibido:');
+        console.log('📨 Mensaje recibido:');
         console.log(`   ${messageInfo}`);
         console.log('   Datos:', event);
-        
-        // 3. Procesar el evento (aquí iría tu lógica de negocio)
-        await processUserSignedUpEvent(event);
-        
       } catch (err) {
         console.log('❌ Error procesando mensaje:');
         console.log(`   ${messageInfo}`);
@@ -42,11 +38,5 @@ const run = async () => {
     }
   });
 };
-
-// Simula el procesamiento del evento
-async function processUserSignedUpEvent(event) {
-  console.log(`   📧 Enviando email de bienvenida a: ${event.email}`);
-  console.log(`   👤 Usuario: ${event.user_id} registrado en: ${event.timestamp}`);
-}
 
 module.exports = { run };
