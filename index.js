@@ -1,9 +1,7 @@
 const consumer = require('./app/consumer');
-const producer = require('./app/producer-valid');
-const invalidProducer = require('./app/producer-invalid');
+const producer = require('./app/producer');
 
 Promise.all([ 
   consumer.run(),
   producer.run(),
-  invalidProducer.run()
 ]).catch(console.error);

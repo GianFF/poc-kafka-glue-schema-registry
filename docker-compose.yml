@@ -38,6 +38,5 @@ services:
       - SERVICES=glue,kms,sts,iam,msk,schema
       - LOCALSTACK_AUTH_TOKEN=ls-JERo6991-jOpU-DaNu-tAWo-pEzAceZUb9b8
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - ./init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh

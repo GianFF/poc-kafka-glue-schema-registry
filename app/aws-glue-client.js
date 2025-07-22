@@ -1,7 +1,5 @@
-const { Kafka } = require('kafkajs');
+const AWS = require('aws-sdk');
 
-
-// Configura AWS SDK para LocalStack
 const init = () => new AWS.Glue({
   endpoint: 'http://localhost:4566', // LocalStack Edge
   region: 'us-east-1',

@@ -1,7 +1,7 @@
 {
   "name": "kafka-glue-poc",
   "version": "1.0.0",
-  "description": "POC: Kafka consumer usando AWS Glue Schema Registry y Avro",
+  "description": "POC: Kafka + AWS Glue Schema Registry con validación de esquemas",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
