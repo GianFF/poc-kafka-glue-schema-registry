@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "UserSignedUp",
+  "namespace": "com.example.kafkagluepoc",
+  "fields": [
+    {"name": "user_id", "type": "string"},
+    {"name": "email", "type": "string"},
+    {"name": "timestamp", "type": "string"}
+  ]
+}

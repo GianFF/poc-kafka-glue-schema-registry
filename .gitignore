@@ -1,4 +1,15 @@
 tmp/*
+
 javascript/node_modules/*
+
 golang/bin/*
 golang/go.sum
+
+java/target/
+java/.classpath
+java/.project
+java/.settings/
+
+*.iml
+.idea/
+.vscode/

@@ -1,0 +1,21 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: glue-poc-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+    properties:
+      schema.registry.url: http://localhost:4566
+
+aws:
+  glue:
+    endpoint: http://localhost:4566
+    region: us-east-1
+    access-key: test
+    secret-key: test
+
+kafka:
+  topic: users.signedup
