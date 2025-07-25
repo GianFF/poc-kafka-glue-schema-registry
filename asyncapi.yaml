@@ -3,12 +3,17 @@ info:
   title: User Signup Event API
   version: '1.0.0'
   description: |
-    Ejemplo de documentación AsyncAPI para el evento UserSignedUp usando Kafka y AWS Glue Schema Registry.
+    Ejemplo de documentación AsyncAPI para el evento UserSignedUp usando Kafka, Avro y AWS Glue Schema Registry.
 servers:
   kafkaBroker:
     url: kafka:9092
     protocol: kafka
     description: Broker de Kafka local para la POC
+    # bindings:
+    #   kafka:
+    #     schemaRegistryUrl: 'https://my-schema-registry.com'
+    #     schemaRegistryVendor: 'confluent'
+    #     bindingVersion: '0.5.0'
 channels:
   users.signedup:
     description: Evento emitido cuando un usuario se registra.
@@ -28,21 +33,8 @@ components:
       name: UserSignedUp
       title: User Signed Up Event
       summary: Evento que indica que un usuario se ha registrado.
+      contentType: application/avro
       payload:
-        type: object
-        properties:
-          user_id:
-            type: string
-            description: ID único del usuario
-          email:
-            type: string
-            format: email
-            description: Email del usuario
-          timestamp:
-            type: string
-            format: date-time
-            description: Fecha y hora del registro
-        required:
-          - user_id
-          - email
-          - timestamp
+        schemaFormat: 'application/vnd.apache.avro+yaml;version=1.9.0'
+        schema:
+          $ref: './schemas/UserSignedUp.avsc'

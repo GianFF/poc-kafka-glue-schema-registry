@@ -1,5 +1,12 @@
 # POC Kafka & AWS Glue Schema Registry
 
+Esta prueba de concepto se centra en revisar el AWS Glue Schema Registry y su integración con Kafka.    
+La solucion se implemento en 3 lenguajes diferentes (JavaScript, GoLang, Java).   
+En cada app, se implementa un productor y un consumidor. El productor fallara el 50% de las veces que quiera enviar un mensaje ya que agregara un typo que no respete el formato del evento segun lo definido en AsyncAPI y AWS Glue Schema Registry.
+
+Se utiliza localstack para simular el entorno de AWS y docker compose para gestionar los servicios de Kafka y AWS Glue Schema Registry.   
+Un script init-localstack.sh se encarga de inicializar localstack y registrar el esquema en AWS Glue Schema Registry haciendo uso del AsyncAPI.
+
 ## 📚 Resources
 - [LocalStack Schema Evolution](https://docs.localstack.cloud/aws/tutorials/schema-evolution-glue-msk/)
 - [AWS Glue Schema Registry](https://docs.aws.amazon.com/glue/latest/dg/schema-registry.html)
@@ -49,15 +56,17 @@ docker-compose exec kafka kafka-run-class.sh kafka.tools.GetOffsetShell --broker
 ```
 ### Verificar esquemas en Glue
 ```bash
-aws --endpoint-url=http://localhost:4566 glue get-schema-version --schema-id RegistryName=user-events,SchemaName=UserSignedUp --schema-version-number LatestVersion=true
+docker-compose exec localstack awslocal glue list-schemas
 ```
+
 
 ## 🧠 Consideraciones
 
-### Definición del esquema Avro
+### Registro del esquema en AWS Glue Schema Registry
 
-El archivo `init-localstack.sh` contiene la definición del esquema Avro para el evento `UserSignedUp`, el cual está documentado en el archivo `asyncapi.yaml`. Este esquema es necesario para registrar el evento en AWS Glue Schema Registry y garantizar la validación de los mensajes producidos.
-Este es el primer problema que podemos observar: duplicamos la definición del esquema.
+Para registrar el evento en AWS Glue Schema Registry y garantizar la validación de los mensajes producidos necesitamos la definición del esquema en AVRO y enviarlo al registry. 
+Si documentamos el esquema en AsyncAPI, y no referenciamos a un archivo externo con la defincion del evento, tendremos que duplicar la definición del esquema.    
+He aqui el primer problema que podemos observar.
 
 ```bash
 AVRO_SCHEMA='{
@@ -71,26 +80,33 @@ AVRO_SCHEMA='{
   ]
 }'
 ```
+El archivo `init-localstack.sh` toma la definición del esquema en AVRO y lo registra en AWS Glue Schema Registry.
+El archivo `schemas/UserSignedUp.avsc` contiene la definición del esquema en AVRO.
+El archivo `asyncapi.yaml` contiene la definicion del evento, server y canales. Para la definicion del evento se apalanca del archivo anterior (`schemas/UserSignedUp.avsc`) y de esta forma podemos tener una unica fuente de verdad.
+
 
 ### JavaScript – Mapeo manual al esquema
-En `javascript/app/producer.js`, el objeto `user` se serializa usando `avroType.toBuffer(user)`. Esta línea lanza una excepción si el objeto no cumple con el esquema. En una aplicación productiva, el objeto `user` podría tener una estructura diferente a la esperada por el evento, por lo que sería necesario mapearlo explícitamente al esquema del evento.  
-Para evitar acoplamientos innecesarios, lo ideal sería autogenerar este mapper a partir de la definición de AsyncAPI.
+En `javascript/app/producer.js`, el objeto `user` se serializa usando `avroType.toBuffer(user)`. Esta línea lanza una excepción si el objeto no cumple con el esquema. En una aplicación productiva, el objeto `user` podría tener una estructura diferente a la esperada por el evento, por lo que sería necesario mapearlo explícitamente al esquema del evento.   
+Para evitar acoplamientos innecesarios, lo ideal sería autogenerar un mapper y un DTO a partir de la definición de AsyncAPI.
 
 ### GoLang – Mapeo manual al esquema
 En `golang/internal/producer/producer.go`, el evento `UserSignedUp` se construye manualmente como un `map[string]interface{}`. Este enfoque también requiere que el desarrollador conozca y respete la estructura del esquema, lo cual puede volverse frágil si el esquema cambia.
 
 ### Java – Generación automática del tipo
-En `java/src/main/avro/UserSignedUp.avsc` se encuentra la definición del esquema Avro. Gracias a un plugin, se genera automáticamente la clase `UserSignedUp`, lo que permite trabajar con tipos seguros y evitar errores de mapeo manual.  
-Sin embargo, aún es necesario mantener sincronizado el esquema Avro con la definición de AsyncAPI.  
+Gracias a un plugin, se genera automáticamente la clase `UserSignedUp`, lo que permite trabajar con tipos seguros y evitar errores de mapeo manual.  
 
 ## Conclusiones
 
-Tanto para GoLang como para JS fueron necesarias 3 definiciones para el mismo esquema:
+Gracias a la definicion del AVRO y su reutilizacion en el AsyncAPI hemos evitado triplicar la fuente de la verdad. En el caso de Java, gracias al plugin, hemos evitado tener que generar manualmente la clase `UserSignedUp`. En el caso de GoLang y JS, debemos generar manualmente el mapper y el DTO.   
+
+En caso que no usaramos la definicion del AVRO en el AsyncAPI, tendriamos este escenario:
+
+Tanto para GoLang como para JS serian necesarias 3 definiciones para el mismo esquema:
 - AsyncAPI
 - Esquema Avro
 - DTO
 
-En cambio en Java solo tenemos 2 definiciones:
+En cambio en Java solo tendriamos 2 definiciones:
 - AsyncAPI
 - Esquema Avro  
 
@@ -121,10 +137,15 @@ public void sendUserSignedUpEvent(UserSignedUp user) {
 
 
 ### Recomendación general
-En una arquitectura bien diseñada, los eventos como `UserSignedUp` deberían definirse una sola vez (idealmente en AsyncAPI) y desde allí:
+Los eventos deberían definirse una sola vez (idealmente en AsyncAPI) y desde allí:
 
 - Autogenerar los esquemas Avro
 - Autogenerar los DTOs en los distintos lenguajes
 - Autogenerar los mappers si el modelo de dominio difiere del modelo del evento
 
 Esto reduce el acoplamiento, mejora la mantenibilidad y asegura la consistencia entre servicios.
+
+### TODO
+- Revisar la documentación de AsyncAPI para ver si hay una forma de autogenerar los esquemas Avro a partir de esa definicion y evitar la separacion en dos archivos. Sobre todo teniendo en cuenta que no queremos tener problemas a la hora de subir los asyncAPI al hub de eventos
+- Probar el versionado de eventos en AWS Glue Schema Registry
+- Review costos de AWS Glue Schema Registry

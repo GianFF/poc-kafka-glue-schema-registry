@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "UserSignedUp",
+  "namespace": "com.example.kafkagluepoc",
+  "doc": "Evento que indica que un usuario se ha registrado.",
+  "fields": [
+    {
+      "name": "user_id",
+      "type": "string",
+      "doc": "ID único del usuario"
+    },
+    {
+      "name": "email",
+      "type": "string",
+      "doc": "Email del usuario"
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Fecha y hora del registro en formato timestamp-millis"
+    }
+  ]
+}

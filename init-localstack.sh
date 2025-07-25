@@ -13,16 +13,7 @@ echo "Creando Glue Schema Registry y esquema UserSignedUp..."
 # Crear registry
 awslocal glue create-registry --registry-name user-events
 
-AVRO_SCHEMA='{
-  "type": "record",
-  "name": "UserSignedUp",
-  "namespace": "com.example",
-  "fields": [
-    {"name": "user_id", "type": "string"},
-    {"name": "email", "type": "string"},
-    {"name": "timestamp", "type": "string"}
-  ]
-}'
+AVRO_SCHEMA=$(cat /schemas/UserSignedUp.avsc | tr -d '\n')
 
 # Crear el esquema en Glue
 awslocal glue create-schema \
